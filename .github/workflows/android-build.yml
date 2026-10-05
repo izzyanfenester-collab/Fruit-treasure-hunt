@@ -18,6 +18,9 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x gradlew
 
+      - name: Test gameplay and Android scenes
+        run: ./gradlew --no-daemon testDebugUnitTest lintDebug
+
       - name: Build debug APK
         run: ./gradlew --no-daemon assembleDebug
 
@@ -26,3 +29,4 @@ jobs:
         with:
           name: Treasure-Hunt-Buah-Buahan-debug
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

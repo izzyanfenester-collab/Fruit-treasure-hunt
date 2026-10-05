@@ -1,0 +1,349 @@
+[
+  {
+    "original": "Intro.png",
+    "original_dimensions": [
+      1678,
+      937
+    ],
+    "sha256": "cd25e9042df7f9808946ec39188c710a2205dda88ad984832b1e275c7b7856a6",
+    "asset": "story_intro.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 121046
+  },
+  {
+    "original": "SC 0.jpg",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "67971a5e5ae42540c92bf411f3c198697aab637033885ffaa612712ae9a7fe2f",
+    "asset": "story_supermarket.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 124758
+  },
+  {
+    "original": "SC1.png",
+    "original_dimensions": [
+      1678,
+      937
+    ],
+    "sha256": "61ef371778dec6a26c443d6639cd5b362f64e9bbe24ecbda9d0051e9325365c1",
+    "asset": "story_enter.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 123036
+  },
+  {
+    "original": "SC2.png",
+    "original_dimensions": [
+      1678,
+      937
+    ],
+    "sha256": "dfa9f4a602e9981a79edee20e226291d7c76dfe8343aaadd281faf4c77392429",
+    "asset": "story_briefing.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 103140
+  },
+  {
+    "original": "3-2-1.jpg",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "ad7673603a97c752e29b65100bc9f734dc00dff794a1f20fb87cc9348b5368ee",
+    "asset": "story_countdown.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 56792
+  },
+  {
+    "original": "SC3.png",
+    "original_dimensions": [
+      1676,
+      938
+    ],
+    "sha256": "321a548effe37a4758b201332650a94abce2acfbd4234cfa62e0532985702227",
+    "asset": "story_teamwork.webp",
+    "dimensions": [
+      1024,
+      573
+    ],
+    "bytes": 68662
+  },
+  {
+    "original": "SC4.png",
+    "original_dimensions": [
+      1678,
+      937
+    ],
+    "sha256": "3182e9a01270340db9e9d0c21e4ad1bdc304a0c238a9aad24c9f7bd33a3ea1df",
+    "asset": "story_ready.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 107080
+  },
+  {
+    "original": "SC5.png",
+    "original_dimensions": [
+      1679,
+      937
+    ],
+    "sha256": "1f1d9349733450952d61510941c88b438f26c37c63f6a239f702b71be2afc719",
+    "asset": "story_baskets.webp",
+    "dimensions": [
+      1024,
+      571
+    ],
+    "bytes": 104664
+  },
+  {
+    "original": "SC6.png",
+    "original_dimensions": [
+      1678,
+      937
+    ],
+    "sha256": "592365a7c68aba35bd7347f48484c4443655789644c5c5400bfb6f3e7717a385",
+    "asset": "story_start.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 98822
+  },
+  {
+    "original": "SC7.png",
+    "original_dimensions": [
+      1678,
+      937
+    ],
+    "sha256": "db245f95ec5abdfa8521f825f9d91d8f928d6f2c9c49fe493d1a38e6963ffc84",
+    "asset": "story_fruit_hunt.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 102814
+  },
+  {
+    "original": "SC8.png",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "c4f63efd67619bd235feb806965a1f93f82c428e6fbbe322c976c9a302464840",
+    "asset": "story_orange_team.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 57546
+  },
+  {
+    "original": "SC9.jpg",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "2db10d5fd4cdaee1c17a087dfa8a4a05235522052c9a2b1f6a132d0534a8932c",
+    "asset": "story_orange_basket.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 39602
+  },
+  {
+    "original": "SC10.jpg",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "b03434f1f4b6210aad9f92f89bae9d4c20759cc8a19069a52392d62d12538684",
+    "asset": "story_grape_team.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 77368
+  },
+  {
+    "original": "Taklimat.jpg",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "f249467183803096e03b7ac100b33dab5804313460151058ceb7a08998a3591d",
+    "asset": "story_instruction.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 67770
+  },
+  {
+    "original": "Tinggal 1 Minit.jpg",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "67846d6b5f0b8b1ce24adcc7ecf54502128fcfe4a4ab54296fa625de65cea7fb",
+    "asset": "story_warning.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 57826
+  },
+  {
+    "original": "SC11.jpg",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "2c53ffda89b33883cc4eb387a4078cb16d113cd4d4f802767084e5db4e6f5101",
+    "asset": "story_purple_basket.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 55102
+  },
+  {
+    "original": "SC12.jpg",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "65f30615634a9ad12b9a44b9445692fc6162553fdaf7e1ef66d039897e18c7aa",
+    "asset": "story_green_team.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 69404
+  },
+  {
+    "original": "SC13.jpg",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "0d70ea6e9aa1baae47e8056e1d675946d4aed3e0e65390c7f040dec01181f280",
+    "asset": "story_green_basket.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 42106
+  },
+  {
+    "original": "SC14.jpg",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "6ee269c14409a78950bde6255ea201aafc21d7bcbfe02a97ad04c4ccafbb4ca1",
+    "asset": "story_red_team.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 81380
+  },
+  {
+    "original": "SC16.png",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "33476dbcc3a9fb67a33ec6b72e4501a4c616874f19cdcac73a5368936e136467",
+    "asset": "story_montage.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 63962
+  },
+  {
+    "original": "SC17.jpg",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "0f7e8846f45c0c22e0bfeb5a0d06575b63b0949bc33002035c2936676b872e5f",
+    "asset": "story_progress.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 104038
+  },
+  {
+    "original": "SC18.jpg",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "d690011130ab65f336c1a9c2e89b7a9ab29cf776375db55c2febdea4fc9d0f63",
+    "asset": "story_finish.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 101652
+  },
+  {
+    "original": "SC18.png",
+    "original_dimensions": [
+      2752,
+      1536
+    ],
+    "sha256": "8e82aea3aa391381506074cbbbfb9dad6508b1310df5fb07189782a1f7bdb152",
+    "asset": "story_checkout.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 90588
+  },
+  {
+    "original": "SC19.png",
+    "original_dimensions": [
+      1678,
+      937
+    ],
+    "sha256": "8823b670d01ea268e7abe04aa05e13610da6dd5e97784db3d160385590a537a6",
+    "asset": "story_celebration.webp",
+    "dimensions": [
+      1024,
+      572
+    ],
+    "bytes": 115148
+  },
+  {
+    "original": "sc15 1.mp4",
+    "sha256": "4d688045bc87a35dc74f43886feef2c6fc546dbce4d91d005ef2cc5cf5c3c795",
+    "use": "reference clip; optimised still at 1 second integrated in story reader; video not packaged",
+    "derived_asset": "story_red_basket.webp",
+    "derived_dimensions": [
+      1024,
+      576
+    ],
+    "derived_bytes": 54178
+  }
+]
