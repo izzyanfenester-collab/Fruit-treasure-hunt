@@ -83,29 +83,42 @@ class MainActivity : Activity() {
         handler.removeCallbacks(countdown); countdownLabel = null
         game?.stop(); game = null; hud = null; screen = destination
         val root = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL; setPadding(dp(16), dp(12), dp(16), dp(12)); setBackgroundColor(cream)
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(14), dp(10), dp(14), dp(10))
+            setBackgroundColor(cream)
         }
-        val hero = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER; setPadding(0, 0, dp(16), 0) }
+        val hero = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, dp(8))
+        }
         hero.addView(TextView(this).apply {
-            text = title; textSize = 27f; gravity = Gravity.CENTER
+            text = title; textSize = 25f; gravity = Gravity.CENTER
             setTextColor(Color.rgb(36, 92, 58)); setTypeface(null, Typeface.BOLD); setPadding(0, 0, 0, dp(8))
             if (Build.VERSION.SDK_INT >= 28) isAccessibilityHeading = true
         })
         hero.addView(StoryboardView(this, asset, scene), LinearLayout.LayoutParams(-1, 0, 1f))
-        root.addView(hero, LinearLayout.LayoutParams(0, -1, 1.3f))
-        val p = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER; setPadding(dp(4), dp(4), dp(4), dp(8)) }
+        root.addView(hero, LinearLayout.LayoutParams(-1, 0, 1.15f))
+        val p = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setPadding(dp(4), dp(2), dp(4), dp(8))
+        }
         if (subtitle.isNotEmpty()) p.addView(TextView(this).apply {
-            text = subtitle; textSize = 17f; gravity = Gravity.CENTER
+            text = subtitle; textSize = 16f; gravity = Gravity.CENTER
             setTextColor(Color.rgb(49, 70, 61)); setPadding(0, dp(4), 0, dp(8)); setLineSpacing(dp(2).toFloat(), 1f)
         })
-        root.addView(ScrollView(this).apply { isFillViewport = true; addView(p) }, LinearLayout.LayoutParams(0, -1, 1f))
+        root.addView(ScrollView(this).apply {
+            isFillViewport = true
+            addView(p)
+        }, LinearLayout.LayoutParams(-1, 0, 1f))
         showContent(root)
         return p
     }
 
     private fun button(parent: LinearLayout, label: String, colour: Int = Color.rgb(0, 121, 107), action: () -> Unit): Button {
         val b = Button(this).apply {
-            text = label; textSize = 17f; isAllCaps = false; setTextColor(Color.WHITE); setTypeface(null, Typeface.BOLD)
+            text = label; textSize = 16f; isAllCaps = false; setTextColor(Color.WHITE); setTypeface(null, Typeface.BOLD)
             background = GradientDrawable().apply { setColor(colour); cornerRadius = dp(16).toFloat() }
             setOnClickListener { action() }
         }
@@ -185,9 +198,9 @@ class MainActivity : Activity() {
         game?.stop(); handler.removeCallbacks(countdown); screen = Screen.GAME; lastHud = ""
         val p = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(cream) }
         val top = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(dp(12), 0, dp(12), 0) }
-        hud = TextView(this).apply { textSize = 19f; gravity = Gravity.CENTER; setTextColor(Color.rgb(36, 92, 58)); setTypeface(null, Typeface.BOLD) }
+        hud = TextView(this).apply { textSize = 15f; gravity = Gravity.CENTER; setTextColor(Color.rgb(36, 92, 58)); setTypeface(null, Typeface.BOLD) }
         top.addView(hud, LinearLayout.LayoutParams(0, dp(56), 1f))
-        top.addView(Button(this).apply { text = "JEDA"; isAllCaps = false; setOnClickListener { pause() } }, LinearLayout.LayoutParams(dp(100), dp(52)))
+        top.addView(Button(this).apply { text = "JEDA"; isAllCaps = false; setOnClickListener { pause() } }, LinearLayout.LayoutParams(dp(82), dp(52)))
         p.addView(top)
         game = FruitGameView(this, selected, { state ->
             val label = getString(R.string.game_hud, ceil(state.remaining).toInt(), state.score, "♥".repeat(state.lives) + "♡".repeat(3 - state.lives))
