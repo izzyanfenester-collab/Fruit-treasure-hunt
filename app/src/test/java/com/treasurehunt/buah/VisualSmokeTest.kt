@@ -54,7 +54,7 @@ class VisualSmokeTest {
             assertEquals(1, views().filterIsInstance<FruitGameView>().size); capture("gameplay", false)
             val state = GameState(Basket.ORANGE); state.catchFruit(FruitKind.ORANGE); state.tick(60f)
             activity.results(state); capture("results", true)
-            tap("LIHAT PENAMAT"); tap("NEXT"); capture("checkout", true)
+            tap("LIHAT PENAMAT"); tap("SETERUSNYA"); capture("checkout", true)
             val icon = activity.getDrawable(R.mipmap.ic_launcher)!!
             assertTrue(icon is android.graphics.drawable.AdaptiveIconDrawable)
             val iconBitmap = Bitmap.createBitmap(192, 192, Bitmap.Config.ARGB_8888)
