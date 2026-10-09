@@ -105,14 +105,14 @@ class MainActivityTest {
         assertTrue(hasText("TAHNIAH!")); assertTrue(hasText("Skor akhir: 30"))
         assertTrue(hasText("Buah ditangkap: 2")); assertTrue(hasText("Buah bonus: 1")); assertTrue(hasText("Kesalahan: 1"))
         tap("LIHAT PENAMAT"); assertEquals("story_finish", asset())
-        tap("NEXT"); assertEquals("story_checkout", asset())
-        tap("NEXT"); assertEquals("story_celebration", asset()); assertTrue(hasText("ANDA TELAH MENYELESAIKAN"))
+        tap("SETERUSNYA"); assertEquals("story_checkout", asset())
+        tap("SETERUSNYA"); assertEquals("story_celebration", asset()); assertTrue(hasText("ANDA TELAH MENYELESAIKAN"))
         tap("MENU UTAMA"); assertTrue(hasText("MULA BERMAIN"))
     }
 
     @Test fun gameOverResultsDoNotOfferSuccessfulEnding() {
         val state = GameState(Basket.GREEN); repeat(3) { state.catchWrong() }
         activity.results(state)
-        assertTrue(hasText("GAME OVER")); assertTrue(hasText("Kesalahan: 3")); assertFalse(hasText("LIHAT PENAMAT"))
+        assertTrue(hasText("PERMAINAN TAMAT")); assertTrue(hasText("Kesalahan: 3")); assertFalse(hasText("LIHAT PENAMAT"))
     }
 }
