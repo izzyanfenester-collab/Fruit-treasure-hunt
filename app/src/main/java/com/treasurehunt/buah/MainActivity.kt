@@ -7,6 +7,7 @@ import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.media.AudioManager
 import android.media.ToneGenerator
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -18,7 +19,7 @@ import android.widget.*
 import kotlin.math.ceil
 
 class MainActivity : Activity() {
-    private enum class Screen { SPLASH, MENU, STORY, INSTRUCTIONS, BASKETS, COUNTDOWN, GAME, RESULT, ENDING }
+    private enum class Screen { SPLASH, MENU, VIDEO, STORY, INSTRUCTIONS, BASKETS, COUNTDOWN, GAME, RESULT, ENDING }
     private data class Frame(val asset: String, val title: String, val caption: String, val scene: Scene)
     private var screen = Screen.SPLASH
     private var selected = Basket.GREEN
@@ -28,6 +29,7 @@ class MainActivity : Activity() {
     private var tone: ToneGenerator? = null
     private var sound = true
     private var pauseDialog: AlertDialog? = null
+    private var storyVideo: VideoView? = null
     private val cream = Color.rgb(255, 248, 226)
     private val handler = Handler(Looper.getMainLooper())
     private var countdownStep = 3
@@ -76,10 +78,11 @@ class MainActivity : Activity() {
         sound = getPreferences(0).getBoolean("sound", true)
         tone = runCatching { ToneGenerator(AudioManager.STREAM_MUSIC, 65) }.getOrNull()
         volumeControlStream = AudioManager.STREAM_MUSIC
-        if (getPreferences(0).getBoolean("intro_seen", false)) menu() else splash()
+        menu()
     }
 
     private fun page(destination: Screen, title: String, subtitle: String, scene: Scene, asset: String): LinearLayout {
+        releaseStoryVideo()
         handler.removeCallbacks(countdown); countdownLabel = null
         game?.stop(); game = null; hud = null; screen = destination
         val root = LinearLayout(this).apply {
@@ -134,15 +137,75 @@ class MainActivity : Activity() {
     private fun completeIntro() { getPreferences(0).edit().putBoolean("intro_seen", true).apply() }
 
     private fun menu() {
-        val p = page(Screen.MENU, "TREASURE HUNT\nBUAH-BUAHAN", "Pasar Ceria • Tangkap buah-buahan sahaja!", Scene.TITLE, "story_fruit_hunt")
-        button(p, "MULA BERMAIN") { choose() }
-        button(p, "CERITA", Color.rgb(92, 83, 157)) { story(introFrames + collectionFrames + endingFrames, 0, false) }
+        val p = page(Screen.MENU, "TREASURE HUNT\nBUAH-BUAHAN",
+            "Pasar Ceria • Tangkap buah-buahan sahaja!", Scene.TITLE, "story_fruit_hunt")
+        button(p, "CERITA", Color.rgb(92, 83, 157)) { playStoryVideo() }
         button(p, "CARA BERMAIN") { instructions() }
+        button(p, "MULA BERMAIN") { choose() }
         button(p, "SKOR TERTINGGI", Color.rgb(92, 83, 157)) {
-            AlertDialog.Builder(this).setTitle("SKOR TERTINGGI").setMessage("${getPreferences(0).getInt("best", 0)} mata").setPositiveButton("OK", null).show()
+            AlertDialog.Builder(this).setTitle("SKOR TERTINGGI")
+                .setMessage("${getPreferences(0).getInt("best", 0)} mata")
+                .setPositiveButton("OK", null).show()
         }
         lateinit var soundButton: Button
         soundButton = button(p, soundLabel()) { toggleSound(); soundButton.text = soundLabel() }
+    }
+
+    /** Plays a bundled MP4 from app/src/main/res/raw/cerita.mp4.
+     *  No network access or extra permissions are required.
+     */
+    private fun playStoryVideo() {
+        releaseStoryVideo()
+        val videoId = resources.getIdentifier("cerita", "raw", packageName)
+        if (videoId == 0) {
+            AlertDialog.Builder(this)
+                .setTitle("VIDEO CERITA")
+                .setMessage("Video cerita belum dimasukkan ke dalam aplikasi.")
+                .setPositiveButton("KEMBALI", null)
+                .show()
+            return
+        }
+        handler.removeCallbacks(countdown)
+        game?.stop(); game = null; hud = null
+        screen = Screen.VIDEO
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(Color.BLACK)
+            setPadding(dp(8), dp(8), dp(8), dp(8))
+        }
+        root.addView(TextView(this).apply {
+            text = "CERITA"
+            gravity = Gravity.CENTER
+            textSize = 22f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+        }, LinearLayout.LayoutParams(-1, dp(48)))
+
+        val player = VideoView(this).apply {
+            setMediaController(MediaController(this@MainActivity).also { it.setAnchorView(this) })
+            setOnPreparedListener { media ->
+                media.isLooping = false
+                media.setVolume(if (sound) 1f else 0f, if (sound) 1f else 0f)
+            }
+            setOnCompletionListener { menu() }
+            setOnErrorListener { _, _, _ ->
+                Toast.makeText(this@MainActivity, "Video tidak dapat dimainkan.", Toast.LENGTH_LONG).show()
+                menu()
+                true
+            }
+        }
+        storyVideo = player
+        root.addView(player, LinearLayout.LayoutParams(-1, 0, 1f))
+        button(root, "KEMBALI KE MENU", Color.rgb(92, 83, 157)) { menu() }
+        showContent(root)
+        player.setVideoURI(Uri.parse("android.resource://$packageName/$videoId"))
+        player.start()
+    }
+
+    private fun releaseStoryVideo() {
+        storyVideo?.stopPlayback()
+        storyVideo = null
     }
 
     private fun story(frames: List<Frame>, index: Int, intro: Boolean, ending: Boolean = false) {
@@ -266,13 +329,13 @@ class MainActivity : Activity() {
         setContentView(view); view.requestApplyInsets()
     }
     private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
-    override fun onPause() { game?.pause(); handler.removeCallbacks(countdown); super.onPause() }
+    override fun onPause() { game?.pause(); storyVideo?.pause(); handler.removeCallbacks(countdown); super.onPause() }
     override fun onResume() {
         super.onResume()
         if (screen == Screen.COUNTDOWN) { handler.removeCallbacks(countdown); handler.postDelayed(countdown, 1000) }
         else if (game?.isRunning == false) pause()
     }
-    override fun onDestroy() { handler.removeCallbacksAndMessages(null); game?.stop(); pauseDialog?.dismiss(); tone?.release(); super.onDestroy() }
+    override fun onDestroy() { handler.removeCallbacksAndMessages(null); game?.stop(); releaseStoryVideo(); pauseDialog?.dismiss(); tone?.release(); super.onDestroy() }
     @Suppress("DEPRECATION") @Deprecated("Legacy back navigation")
     override fun onBackPressed() { when (screen) { Screen.GAME -> pause(); Screen.MENU -> super.onBackPressed(); else -> menu() } }
 }
