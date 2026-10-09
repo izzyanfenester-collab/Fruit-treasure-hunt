@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Treasure Hunt Buah-Buahan</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app">
+    <section id="menuScreen" class="screen menu-screen">
+      <div class="hero-panel">
+        <img src="assets/story_fruit_hunt.webp" alt="Treasure Hunt Buah-Buahan" class="hero-img">
+        <div class="hero-overlay">
+          <h1>TREASURE HUNT<br>BUAH-BUAHAN</h1>
+          <p>Pasar Ceria • Tangkap buah-buahan sahaja!</p>
+        </div>
+      </div>
+      <div class="menu-panel">
+        <button class="menu-btn purple" data-action="story">CERITA</button>
+        <button class="menu-btn" data-action="how">CARA BERMAIN</button>
+        <button class="menu-btn" data-action="play">MULA BERMAIN</button>
+        <button class="menu-btn purple" data-action="score">SKOR TERTINGGI</button>
+        <button class="menu-btn" id="soundBtn">BUNYI ON</button>
+        <div class="hint">F11 = Skrin penuh</div>
+      </div>
+    </section>
+
+    <section id="videoScreen" class="screen hidden dark-screen">
+      <div class="topbar"><h2>CERITA</h2><button class="small-btn" data-back>MENU UTAMA</button></div>
+      <video id="storyVideo" controls preload="metadata" src="assets/cerita.mp4"></video>
+    </section>
+
+    <section id="howScreen" class="screen hidden info-screen">
+      <div class="info-card">
+        <img src="assets/story_instruction.webp" alt="Cara Bermain">
+        <div class="info-copy">
+          <h2>CARA BERMAIN</h2>
+          <p>Tangkap buah-buahan sahaja. Elak tangkap selain buah.</p>
+          <p>Gerakkan bakul menggunakan <b>← →</b> atau kekunci <b>A / D</b>. Boleh juga gerakkan tetikus.</p>
+          <p>Buah biasa: <b>+10</b> • Buah bonus ikut warna bakul: <b>+20</b></p>
+          <p>Masa permainan: <b>60 saat</b> • Nyawa: <b>3 hati</b></p>
+          <p>Barang bukan buah: <b>−1 hati</b>. Hilang semua hati = PERMAINAN TAMAT.</p>
+          <div class="row">
+            <button class="menu-btn" data-action="play">MULA</button>
+            <button class="menu-btn purple" data-back>MENU UTAMA</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="basketScreen" class="screen hidden basket-screen">
+      <div class="basket-art">
+        <img src="assets/story_baskets.webp" alt="Pilih Bakul">
+      </div>
+      <div class="basket-panel">
+        <h2>PILIH BAKUL</h2>
+        <p>Buah yang sepadan dengan warna bakul mendapat +20 mata.</p>
+        <div id="basketChoices" class="basket-choices"></div>
+        <button class="menu-btn" id="startBtn">MULA</button>
+        <button class="menu-btn purple" data-back>MENU UTAMA</button>
+      </div>
+    </section>
+
+    <section id="countScreen" class="screen hidden count-screen">
+      <img src="assets/story_countdown.webp" alt="Bersedia">
+      <div class="count-overlay">
+        <h2 id="readyText">SEDIA!</h2>
+        <div id="countText">3...</div>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="screen hidden game-screen">
+      <div class="game-hud">
+        <div id="hudTime">MASA: 60</div>
+        <div id="hudScore">SKOR: 000</div>
+        <div id="hudLives">♥♥♥</div>
+        <button class="small-btn" id="pauseBtn">JEDA</button>
+      </div>
+      <canvas id="gameCanvas" width="1280" height="640"></canvas>
+      <div id="feedback" class="feedback"></div>
+    </section>
+
+    <section id="resultScreen" class="screen hidden result-screen">
+      <div class="result-card">
+        <img id="resultImg" src="assets/story_progress.webp" alt="Keputusan">
+        <div class="result-copy">
+          <h2 id="resultTitle">TAHNIAH!</h2>
+          <div id="resultStats"></div>
+          <button class="menu-btn" data-action="play">MAIN LAGI</button>
+          <button class="menu-btn purple" data-back>MENU UTAMA</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <h2 id="modalTitle"></h2>
+      <div id="modalBody"></div>
+      <div id="modalButtons" class="row"></div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
