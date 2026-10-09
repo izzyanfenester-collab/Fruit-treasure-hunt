@@ -1,0 +1,32 @@
+{
+  "name": "fruit-treasure-hunt-windows",
+  "version": "1.0.0",
+  "description": "Treasure Hunt Buah-Buahan untuk Windows",
+  "main": "main.js",
+  "author": "Fruit Treasure Hunt",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "39.1.0",
+    "electron-builder": "26.0.12"
+  },
+  "build": {
+    "appId": "com.treasurehunt.buah.windows",
+    "productName": "Treasure Hunt Buah-Buahan",
+    "asar": true,
+    "directories": {"output": "dist"},
+    "files": ["main.js","src/**/*","package.json"],
+    "win": {"target": [{"target": "nsis","arch": ["x64"]}]},
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Treasure Hunt Buah-Buahan",
+      "artifactName": "Fruit-Treasure-Hunt-Setup.${ext}"
+    }
+  }
+}
