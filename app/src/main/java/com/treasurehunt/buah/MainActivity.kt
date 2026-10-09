@@ -131,8 +131,8 @@ class MainActivity : Activity() {
 
     private fun splash() {
         val p = page(Screen.SPLASH, "TREASURE HUNT\nBUAH-BUAHAN", "Selamat datang!\nMisi buah-buahan bersama Cikgu dan kawan-kawan.", Scene.TITLE, "story_intro")
-        button(p, "NEXT") { story(introFrames, 0, true) }
-        button(p, "SKIP INTRO", Color.rgb(92, 83, 157)) { completeIntro(); menu() }
+        button(p, "SETERUSNYA") { story(introFrames, 0, true) }
+        button(p, "LANGKAU INTRO", Color.rgb(92, 83, 157)) { completeIntro(); menu() }
     }
     private fun completeIntro() { getPreferences(0).edit().putBoolean("intro_seen", true).apply() }
 
@@ -212,18 +212,18 @@ class MainActivity : Activity() {
         val frame = frames[index]
         val p = page(if (ending) Screen.ENDING else Screen.STORY, frame.title,
             "${index + 1} / ${frames.size}\n\n${frame.caption}", frame.scene, frame.asset)
-        if (index < frames.lastIndex) button(p, "NEXT") { story(frames, index + 1, intro, ending) }
+        if (index < frames.lastIndex) button(p, "SETERUSNYA") { story(frames, index + 1, intro, ending) }
         else if (ending) button(p, "MAIN LAGI") { choose() }
         else button(p, if (intro) "CARA BERMAIN" else "MENU UTAMA") {
             if (intro) { completeIntro(); instructions() } else menu()
         }
-        button(p, "BACK", Color.rgb(92, 83, 157)) { if (index > 0) story(frames, index - 1, intro, ending) else menu() }
-        if (!ending) button(p, "SKIP INTRO") { if (intro) completeIntro(); menu() }
+        button(p, "KEMBALI", Color.rgb(92, 83, 157)) { if (index > 0) story(frames, index - 1, intro, ending) else menu() }
+        if (!ending) button(p, "LANGKAU INTRO") { if (intro) completeIntro(); menu() }
         else button(p, "MENU UTAMA") { menu() }
     }
 
     private fun instructions() {
-        val p = page(Screen.INSTRUCTIONS, "CARA BERMAIN", "Tangkap buah-buahan sahaja.\nElak tangkap selain buah.\n\nSeret bakul ke kiri dan kanan.\nBuah biasa: +10 • Buah bonus: +20\n60 saat • 3 hati\nBarang bukan buah: −1 hati\nHilang semua hati = GAME OVER.", Scene.INSTRUCTIONS, "story_instruction")
+        val p = page(Screen.INSTRUCTIONS, "CARA BERMAIN", "Tangkap buah-buahan sahaja.\nElak tangkap selain buah.\n\nSeret bakul ke kiri dan kanan.\nBuah biasa: +10 • Buah bonus: +20\n60 saat • 3 hati\nBarang bukan buah: −1 hati\nHilang semua hati = PERMAINAN TAMAT.", Scene.INSTRUCTIONS, "story_instruction")
         button(p, "MULA") { choose() }
         button(p, "MENU UTAMA", Color.rgb(92, 83, 157)) { menu() }
     }
@@ -293,7 +293,7 @@ class MainActivity : Activity() {
         val best = maxOf(state.score, prefs.getInt("best", 0)); prefs.edit().putInt("best", best).apply()
         val failed = state.lives == 0
         playTone(if (failed) Feedback.GAME_OVER else Feedback.SUCCESS)
-        val p = page(Screen.RESULT, if (failed) "GAME OVER" else "TAHNIAH!",
+        val p = page(Screen.RESULT, if (failed) "PERMAINAN TAMAT" else "TAHNIAH!",
             "Skor akhir: ${state.score}\nBuah ditangkap: ${state.fruitsCaught}\nBuah bonus: ${state.bonusCaught}\nKesalahan: ${state.mistakes}\nSkor tertinggi: $best\n\n${if (failed) "BUKAN BUAH! Cuba lagi, kamu boleh!" else "Masa tamat! Jumpa Cikgu di kaunter."}",
             if (failed) Scene.RETRY else Scene.CHECKOUT, if (failed) "story_briefing" else "story_progress")
         button(p, "MAIN LAGI") { beginCountdown() }
