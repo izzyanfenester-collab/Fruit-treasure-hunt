@@ -22,7 +22,7 @@ import org.robolectric.shadows.ShadowChoreographer
 import java.time.Duration
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [24], qualifiers = "w960dp-h480dp-land")
+@Config(sdk = [24], qualifiers = "w360dp-h800dp-port")
 @LooperMode(LooperMode.Mode.PAUSED)
 class MainActivityTest {
     private lateinit var controller: ActivityController<MainActivity>
@@ -42,31 +42,32 @@ class MainActivityTest {
         return view.tag.toString()
     }
     private fun startRound(): FruitGameView {
-        tap("SKIP INTRO"); tap("MULA BERMAIN"); tap("MULA")
+        tap("MULA BERMAIN"); tap("MULA")
         advanceFrames(3500)
         return views().filterIsInstance<FruitGameView>().single()
     }
 
-    @Test fun introUsesStoryboardScenesAndLeadsThroughInstructionsToBasketSelection() {
-        assertEquals("story_intro", asset()); tap("NEXT")
-        listOf("story_supermarket", "story_enter", "story_briefing", "story_instruction", "story_teamwork").forEach { name ->
-            assertEquals(name, asset()); tap("NEXT")
-        }
-        assertEquals("story_ready", asset()); tap("CARA BERMAIN")
-        assertTrue(hasText("Tangkap buah-buahan sahaja.")); assertTrue(hasText("Elak tangkap selain buah."))
-        tap("MULA"); assertEquals("story_baskets", asset())
-        assertTrue(activity.getPreferences(0).getBoolean("intro_seen", false))
+    @Test fun launchOpensMalayMainMenuWithRequestedButtonOrder() {
+        assertEquals("story_fruit_hunt", asset())
+        val labels = views().filterIsInstance<Button>().map { it.text.toString() }
+        assertEquals(listOf("CERITA", "CARA BERMAIN", "MULA BERMAIN", "SKOR TERTINGGI", "BUNYI ON"), labels)
+        tap("CARA BERMAIN")
+        assertTrue(hasText("Tangkap buah-buahan sahaja."))
+        assertTrue(hasText("Elak tangkap selain buah."))
+        tap("MENU UTAMA")
+        assertTrue(hasText("MULA BERMAIN"))
     }
 
-    @Test fun skipIntroPersistsAndNextLaunchOpensMainMenu() {
-        tap("SKIP INTRO"); assertTrue(hasText("MULA BERMAIN"))
+    @Test fun menuIsShownOnSubsequentLaunchesWithoutIntro() {
+        assertTrue(hasText("CERITA"))
         controller.pause().stop().destroy()
         controller = Robolectric.buildActivity(MainActivity::class.java).setup()
-        assertTrue(hasText("MULA BERMAIN")); assertFalse(hasText("SKIP INTRO"))
+        assertTrue(hasText("MULA BERMAIN"))
+        assertFalse(hasText("SKIP INTRO"))
     }
 
     @Test fun basketSelectionHighlightsChoiceAndCountdownPrecedesGameplay() {
-        tap("SKIP INTRO"); tap("MULA BERMAIN"); tap("OREN • Oren")
+        tap("MULA BERMAIN"); tap("OREN • Oren")
         assertTrue(hasText("✓ OREN • Oren")); tap("MULA")
         advanceFrames(100)
         assertEquals("story_countdown", asset()); assertTrue(hasText("3..."))
