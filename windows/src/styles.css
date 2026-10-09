@@ -1,0 +1,54 @@
+:root{--cream:#fff8e2;--green:#24733d;--teal:#00796b;--purple:#5c539d;--dark:#20362d}
+*{box-sizing:border-box}
+html,body,#app{margin:0;width:100%;height:100%;overflow:hidden;font-family:Segoe UI,Arial,sans-serif;background:var(--cream);color:var(--dark)}
+button{font:inherit}
+.screen{width:100vw;height:100vh;display:flex}
+.hidden{display:none!important}
+.menu-screen{padding:2.2vh 2vw;gap:2vw}
+.hero-panel{flex:1.55;position:relative;border-radius:28px;overflow:hidden;box-shadow:0 8px 28px #0002;background:#dfead9}
+.hero-img{width:100%;height:100%;object-fit:cover}
+.hero-overlay{position:absolute;left:0;right:0;bottom:0;padding:3.5vh 3vw;background:linear-gradient(transparent,rgba(0,0,0,.72));color:white}
+.hero-overlay h1{font-size:clamp(34px,4.2vw,72px);line-height:.95;margin:0 0 1vh;font-weight:900}
+.hero-overlay p{font-size:clamp(16px,1.5vw,24px);margin:0}
+.menu-panel{flex:.72;display:flex;flex-direction:column;justify-content:center;padding:2vh 1vw;gap:1.3vh}
+.menu-btn,.small-btn{border:0;border-radius:16px;background:var(--teal);color:white;font-weight:800;cursor:pointer;box-shadow:0 4px 10px #0002;transition:.12s}
+.menu-btn{min-height:56px;font-size:clamp(18px,1.55vw,26px);padding:1.4vh 1.2vw}
+.menu-btn:hover,.small-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.purple{background:var(--purple)}
+.hint{text-align:center;opacity:.7;margin-top:1vh}
+.dark-screen{background:#000;flex-direction:column;padding:1.5vh 1vw}
+.topbar,.game-hud{height:64px;display:flex;align-items:center;gap:24px;color:white;padding:0 1vw}
+.topbar h2{flex:1;text-align:center}
+#storyVideo{width:100%;height:calc(100vh - 82px);object-fit:contain;background:#000}
+.small-btn{padding:10px 18px;font-size:17px}
+.info-screen,.basket-screen,.result-screen{padding:2vh 2vw;align-items:stretch;gap:2vw}
+.info-card,.result-card{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(360px,.8fr);width:100%;gap:2vw}
+.info-card img,.result-card img,.basket-art img{width:100%;height:100%;object-fit:cover;border-radius:24px}
+.info-copy,.result-copy,.basket-panel{display:flex;flex-direction:column;justify-content:center;padding:2vh 1vw}
+.info-copy h2,.basket-panel h2,.result-copy h2{font-size:clamp(30px,3vw,50px);color:var(--green);margin:.5vh 0 1vh}
+.info-copy p,.basket-panel p,#resultStats{font-size:clamp(17px,1.5vw,25px);line-height:1.4}
+.row{display:flex;gap:12px}.row>*{flex:1}
+.basket-art{flex:1.55}
+.basket-panel{flex:.75}
+.basket-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1vh 0}
+.basket-choice{border:4px solid transparent;border-radius:16px;padding:16px;color:white;font-size:20px;font-weight:900;cursor:pointer}
+.basket-choice.selected{border-color:#ffd54f;transform:scale(1.02)}
+.count-screen{position:relative;background:#183c2a}
+.count-screen img{width:100%;height:100%;object-fit:cover;filter:brightness(.68)}
+.count-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;text-shadow:0 4px 14px #000}
+.count-overlay h2{font-size:clamp(36px,5vw,72px);margin:0}
+#countText{font-size:clamp(100px,14vw,220px);font-weight:1000}
+.game-screen{flex-direction:column;background:#13251e;position:relative}
+.game-hud{background:#fff8e2;color:#245c3a;font-weight:900;font-size:clamp(18px,1.7vw,27px);justify-content:center}
+.game-hud>div{min-width:140px;text-align:center}
+#gameCanvas{width:100%;height:calc(100vh - 64px);display:block;background:#d7ebd3}
+.feedback{position:absolute;top:90px;left:50%;transform:translateX(-50%);font-size:38px;font-weight:1000;color:#fff;text-shadow:0 3px 8px #000;pointer-events:none}
+.result-copy .menu-btn{margin-top:12px}
+.modal{position:fixed;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;z-index:99}
+.modal-card{width:min(680px,90vw);background:var(--cream);padding:28px;border-radius:24px;box-shadow:0 20px 70px #0008;text-align:center}
+.modal-card h2{color:var(--green);font-size:36px;margin:0 0 12px}
+.modal-card #modalBody{font-size:22px;line-height:1.5;margin:14px 0 22px}
+@media(max-aspect-ratio:4/3){
+  .menu-screen{flex-direction:column}.hero-panel{flex:1}.menu-panel{flex:1}
+  .info-card,.result-card{grid-template-columns:1fr 1fr}
+}
