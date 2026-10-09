@@ -20,7 +20,7 @@ import java.time.Duration
 
 /** Render the actual Android views and supplied image resources, using native graphics. */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28], qualifiers = "w960dp-h480dp-land-xhdpi")
+@Config(sdk = [28], qualifiers = "w360dp-h800dp-port-xhdpi")
 @LooperMode(LooperMode.Mode.PAUSED)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class VisualSmokeTest {
@@ -34,8 +34,8 @@ class VisualSmokeTest {
         val output = File("build/reports/visual-smoke").apply { mkdirs() }
         fun capture(name: String, story: Boolean) {
             val root = activity.findViewById<View>(android.R.id.content)
-            root.measure(View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY))
-            root.layout(0, 0, 1920, 960)
+            root.measure(View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY))
+            root.layout(0, 0, 1080, 1920)
             advanceFrames(32)
             if (story) {
                 val image = views().filterIsInstance<ImageView>().single()
@@ -43,13 +43,13 @@ class VisualSmokeTest {
                 while (image.drawable == null && attempts++ < 50) { Thread.sleep(20); advanceFrames(16) }
                 assertNotNull("Storyboard image must be decoded before rendering", image.drawable)
             }
-            val bitmap = Bitmap.createBitmap(1920, 960, Bitmap.Config.ARGB_8888)
+            val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
             root.draw(Canvas(bitmap))
             File(output, "$name.png").outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
         }
         try {
             capture("title", true)
-            tap("SKIP INTRO"); tap("MULA BERMAIN"); tap("OREN • Oren"); capture("basket-selection", true)
+            tap("MULA BERMAIN"); tap("OREN • Oren"); capture("basket-selection", true)
             tap("MULA"); advanceFrames(3500); advanceFrames(3000)
             assertEquals(1, views().filterIsInstance<FruitGameView>().size); capture("gameplay", false)
             val state = GameState(Basket.ORANGE); state.catchFruit(FruitKind.ORANGE); state.tick(60f)
