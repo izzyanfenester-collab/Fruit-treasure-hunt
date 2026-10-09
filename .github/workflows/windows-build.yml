@@ -1,0 +1,46 @@
+name: Build Windows Installer
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "windows/**"
+      - ".github/workflows/windows-build.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sediakan aset dan video
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force windows/src/assets | Out-Null
+          Copy-Item app/src/main/res/drawable-nodpi/*.webp windows/src/assets/
+          python -m pip install --disable-pip-version-check gdown==5.2.0
+          python -m gdown "https://drive.google.com/uc?id=1PkR4yiBtC_nsbdrwAvjn-l62qVTDLgRv" -O windows/src/assets/cerita.mp4
+          $size = (Get-Item windows/src/assets/cerita.mp4).Length
+          Write-Host ("Video cerita: {0:N1} MB" -f ($size / 1MB))
+          if ($size -lt 50000000) { throw "Video cerita tidak lengkap" }
+
+      - name: Pasang dependency
+        working-directory: windows
+        run: npm install --no-audit --no-fund
+
+      - name: Build Windows installer
+        working-directory: windows
+        run: npm run dist
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Fruit-Treasure-Hunt-Windows-Installer
+          path: windows/dist/Fruit-Treasure-Hunt-Setup.exe
+          if-no-files-found: error
