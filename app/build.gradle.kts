@@ -3,7 +3,7 @@ android {
     namespace = "com.treasurehunt.buah"
     compileSdk = 35
     buildToolsVersion = "35.0.0"
-    defaultConfig { applicationId = "com.treasurehunt.buah"; minSdk = 24; targetSdk = 35; versionCode = 3; versionName = "1.2" }
+    defaultConfig { applicationId = "com.treasurehunt.buah"; minSdk = 24; targetSdk = 35; versionCode = 4; versionName = "1.3" }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
     testOptions {
