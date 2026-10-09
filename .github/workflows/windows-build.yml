@@ -7,6 +7,9 @@ on:
       - "windows/**"
       - ".github/workflows/windows-build.yml"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -44,3 +47,15 @@ jobs:
           name: Fruit-Treasure-Hunt-Windows-Installer
           path: windows/dist/Fruit-Treasure-Hunt-Setup.exe
           if-no-files-found: error
+
+      - name: Publish Windows installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $installer = "windows/dist/Fruit-Treasure-Hunt-Setup.exe"
+          if (gh release view v1.0-windows 2>$null) {
+            gh release upload v1.0-windows $installer --clobber
+          } else {
+            gh release create v1.0-windows $installer --target "${{ github.sha }}" --title "Treasure Hunt Buah-Buahan v1.0 Windows" --notes "Versi Windows landscape untuk laptop. Termasuk video CERITA offline."
+          }
