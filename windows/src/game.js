@@ -9,22 +9,69 @@
   const keys = new Set();
 
   const baskets = {
-    GREEN:{name:'HIJAU',color:'#43a047',bonus:'Epal hijau'},
-    RED:{name:'MERAH',color:'#d93636',bonus:'Epal merah'},
-    PURPLE:{name:'UNGU',color:'#8525a6',bonus:'Anggur'},
-    ORANGE:{name:'OREN',color:'#e57500',bonus:'Oren'}
+    GREEN:{name:'HIJAU',color:'#43a047',bonus:'Epal hijau',sprite:'baskets/bakul_hijau.png'},
+    RED:{name:'MERAH',color:'#d93636',bonus:'Epal merah',sprite:'baskets/bakul_merah.png'},
+    PURPLE:{name:'UNGU',color:'#8525a6',bonus:'Anggur',sprite:'baskets/bakul_ungu.png'},
+    ORANGE:{name:'OREN',color:'#e57500',bonus:'Oren',sprite:'baskets/bakul_oren.png'}
   };
   const fruits = [
-    {name:'Epal hijau',color:'#57b64a',bonus:'GREEN'},
-    {name:'Epal merah',color:'#e43b3b',bonus:'RED'},
-    {name:'Oren',color:'#f28c18',bonus:'ORANGE'},
-    {name:'Anggur',color:'#8d4bb6',bonus:'PURPLE'},
-    {name:'Mangga',color:'#fbc02d'},
-    {name:'Pir',color:'#99bd40'},
-    {name:'Strawberi',color:'#f34b65'},
-    {name:'Pisang',color:'#ffd54f'}
+    {name:'Epal hijau',bonus:'GREEN',sprite:'fruits/epal_hijau.png'},
+    {name:'Epal merah',bonus:'RED',sprite:'fruits/epal_merah.png'},
+    {name:'Oren',bonus:'ORANGE',sprite:'fruits/oren.png'},
+    {name:'Anggur',bonus:'PURPLE',sprite:'fruits/anggur.png'},
+    {name:'Mangga',sprite:'fruits/mangga.png'},
+    {name:'Pir',sprite:'fruits/pir.png'},
+    {name:'Strawberi',sprite:'fruits/strawberi.png'},
+    {name:'Pisang',sprite:'fruits/pisang.png'}
   ];
-  const wrongs = ['BOTOL','MAINAN','TIN','KOTAK','KASUT'];
+  const wrongs = [
+    {name:'BOTOL',wrong:true,sprite:'wrong/botol.png'},
+    {name:'MAINAN',wrong:true,sprite:'wrong/mainan.png'},
+    {name:'TIN',wrong:true,sprite:'wrong/tin.png'},
+    {name:'KOTAK',wrong:true,sprite:'wrong/kotak.png'},
+    {name:'KASUT',wrong:true,sprite:'wrong/kasut.png'}
+  ];
+
+  // Cache decoded images before play; NEVER construct Image() in the frame loop.
+  const images = new Map();
+  let preloadPromise;
+  function loadGameSprites() {
+    if (preloadPromise) return preloadPromise;
+    const spritePaths = [
+      ...Object.values(baskets).map(b => b.sprite),
+      ...fruits.map(f => f.sprite),
+      ...wrongs.map(w => w.sprite),
+      'gameplay_lighting.webp'
+    ];
+    preloadPromise = Promise.all(spritePaths.map(relative => new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => { images.set(relative, img); resolve(); };
+      img.onerror = () => {
+        console.error('PNG/imej tidak dijumpai: windows/src/assets/' +
+          (relative.endsWith('.webp') ? relative : 'sprites/' + relative));
+        resolve();
+      };
+      img.src = relative.endsWith('.webp')
+        ? 'assets/' + relative : 'assets/sprites/' + relative;
+    })));
+    return preloadPromise;
+  }
+  function sprite(relative) { return images.get(relative); }
+  function bound(value, minimum, maximum) {
+    return Math.max(minimum, Math.min(maximum, value));
+  }
+  function basketSize(W, H) {
+    const img = sprite(baskets[selected].sprite);
+    const width = bound(W * .155, 145, 285);
+    const height = img ? width * img.naturalHeight / img.naturalWidth : width * .8;
+    return {width, height:Math.min(height, H * .33)};
+  }
+  function fallingSize(item, W, H) {
+    const img = sprite(item.sprite);
+    const width = bound(W * .054, 62, 110);
+    const height = img ? width * img.naturalHeight / img.naturalWidth : width;
+    return {width, height:Math.min(height,H*.19)};
+  }
 
   function show(id){ screens.forEach(x=>x.classList.add('hidden')); $(id).classList.remove('hidden'); }
   function menu(){
@@ -81,7 +128,10 @@
       else{clearInterval(t);startGame();}
     },850);
   }
-  function startGame(){
+  async function startGame(){
+    await loadGameSprites();
+    // If user left the countdown while loading assets, do not start a round.
+    if ($('#countScreen').classList.contains('hidden')) return;
     show('#gameScreen');
     const canvas=$('#gameCanvas'), ctx=canvas.getContext('2d');
     state={time:60,score:0,lives:3,items:[],spawn:0,basketX:.5,basketW:.16,basketH:.09,ended:false};
@@ -103,8 +153,10 @@
   }
   function spawn(){
     const isFruit=Math.random()<.78;
-    const data=isFruit?fruits[Math.floor(Math.random()*fruits.length)]:{name:wrongs[Math.floor(Math.random()*wrongs.length)],wrong:true,color:'#607d8b'};
-    state.items.push({...data,x:.05+Math.random()*.9,y:-.08,r:.037});
+    const data=isFruit
+      ? fruits[Math.floor(Math.random()*fruits.length)]
+      : wrongs[Math.floor(Math.random()*wrongs.length)];
+    state.items.push({...data,x:.06+Math.random()*.88,y:-.10});
   }
   function update(dt){
     state.time=Math.max(0,state.time-dt);
@@ -117,11 +169,18 @@
     state.basketX=Math.max(state.basketW/2,Math.min(1-state.basketW/2,state.basketX));
     const speed=1/d.travel;
     state.items.forEach(it=>it.y+=speed*dt);
-    const by=.87,bx0=state.basketX-state.basketW/2,bx1=state.basketX+state.basketW/2;
+    const canvas=$('#gameCanvas');
+    const W=canvas.clientWidth,H=canvas.clientHeight;
+    const basket=basketSize(W,H),cx=state.basketX*W;
+    // Upper basket opening only: transparent handles should not trigger catches.
+    const catchLeft=cx-basket.width*.38,catchRight=cx+basket.width*.38;
+    const catchTop=H-basket.height*.84,catchBottom=H-basket.height*.33;
     state.items=state.items.filter(it=>{
-      const hit=it.y+it.r>=by && it.y-it.r<=by+state.basketH && it.x>=bx0 && it.x<=bx1;
+      const d=fallingSize(it,W,H),px=it.x*W,py=it.y*H;
+      const hit=px+d.width*.4>catchLeft && px-d.width*.4<catchRight &&
+        py+d.height*.40>catchTop && py-d.height*.40<catchBottom;
       if(hit){catchItem(it);return false;}
-      return it.y<1.12;
+      return py-d.height/2 < H;
     });
     if(state.time<=10 && state.time+dt>10){feedback('10 SAAT LAGI!');beep(700,.2);}
     if(state.time<=0||state.lives<=0)finish();
@@ -137,29 +196,46 @@
     $('#hudScore').textContent='SKOR: '+String(state.score).padStart(3,'0');
     $('#hudLives').textContent='♥'.repeat(state.lives)+'♡'.repeat(3-state.lives);
   }
-  let bgImg=null;
+  // Responsive cover-fit background and individually cropped transparent PNG sprites.
   function draw(canvas,ctx){
     const ratio=devicePixelRatio||1;
     const W=canvas.clientWidth,H=canvas.clientHeight;
-    canvas.width=Math.max(1,Math.round(W*ratio));canvas.height=Math.max(1,Math.round(H*ratio));
+    const deviceW=Math.max(1,Math.round(W*ratio));
+    const deviceH=Math.max(1,Math.round(H*ratio));
+    if(canvas.width!==deviceW||canvas.height!==deviceH){
+      canvas.width=deviceW;
+      canvas.height=deviceH;
+    }
     ctx.setTransform(ratio,0,0,ratio,0,0);
-    if(!bgImg){bgImg=new Image();bgImg.src='assets/gameplay_lighting.webp';}
-    if(bgImg.complete&&bgImg.naturalWidth)ctx.drawImage(bgImg,0,0,W,H);
-    else{ctx.fillStyle='#d9ecd1';ctx.fillRect(0,0,W,H);}
+    ctx.clearRect(0,0,W,H);
+    ctx.imageSmoothingEnabled=true;
+    ctx.imageSmoothingQuality='high';
+
+    const background=sprite('gameplay_lighting.webp');
+    if(background){
+      const scale=Math.max(W/background.naturalWidth,H/background.naturalHeight);
+      const bw=background.naturalWidth*scale,bh=background.naturalHeight*scale;
+      ctx.drawImage(background,(W-bw)/2,(H-bh)/2,bw,bh);
+    }else{
+      ctx.fillStyle='#d9ecd1';ctx.fillRect(0,0,W,H);
+    }
     ctx.fillStyle='#0002';ctx.fillRect(0,0,W,H);
-    ctx.textAlign='center';ctx.textBaseline='middle';
+
+    // Actual falling-object sprites: no placeholder circles or labels.
     state.items.forEach(it=>{
-      const x=it.x*W,y=it.y*H,r=it.r*Math.min(W,H)*1.3;
-      ctx.beginPath();ctx.fillStyle=it.color;ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
-      ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.stroke();
-      ctx.font='700 '+Math.max(15,W*.015)+'px Segoe UI';
-      ctx.fillStyle='#fff';ctx.strokeStyle='#0009';ctx.lineWidth=4;ctx.strokeText(it.name,x,y);ctx.fillText(it.name,x,y);
+      const img=sprite(it.sprite);
+      if(!img)return;
+      const d=fallingSize(it,W,H);
+      ctx.drawImage(img,it.x*W-d.width/2,it.y*H-d.height/2,d.width,d.height);
     });
-    const bw=state.basketW*W,bh=state.basketH*H,bx=state.basketX*W-bw/2,by=.87*H;
-    ctx.fillStyle=baskets[selected].color;ctx.beginPath();ctx.roundRect(bx,by,bw,bh,18);ctx.fill();
-    ctx.strokeStyle='#fff';ctx.lineWidth=5;ctx.stroke();
-    ctx.fillStyle='#fff';ctx.font='900 '+Math.max(18,W*.018)+'px Segoe UI';ctx.fillText(baskets[selected].name,bx+bw/2,by+bh/2);
+
+    const basketImg=sprite(baskets[selected].sprite);
+    if(basketImg){
+      const d=basketSize(W,H);
+      ctx.drawImage(basketImg,state.basketX*W-d.width/2,H-d.height-4,d.width,d.height);
+    }
   }
+
   function finish(){
     if(state.ended)return;
     state.ended=true;cancelAnimationFrame(loopId);
@@ -191,5 +267,6 @@
   });
   $('#soundBtn').onclick=()=>{sound=!sound;storage.setItem('sound',sound?'on':'off');$('#soundBtn').textContent=sound?'BUNYI ON':'BUNYI OFF';$('#storyVideo').muted=!sound;};
   $('#startBtn').onclick=countdown;
+  loadGameSprites();
   menu();
 })();
