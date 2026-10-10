@@ -9,7 +9,7 @@ import android.graphics.BitmapFactory
  * The full alpha-connected silhouettes are generated from the same source PNG.
  * Loaded once per game view, never decoded in the animation loop.
  */
-internal class GameSprites(context: Context) {
+internal class GameSprites(private val context: Context) {
     private fun load(path: String): Bitmap {
         return context.assets.open("sprites/$path").use { stream ->
             BitmapFactory.decodeStream(stream) ?: error("Gambar permainan tidak sah: $path")
