@@ -1,0 +1,66 @@
+name: Publish Android v1.4 APK
+
+on:
+  push:
+    paths:
+      - ".github/workflows/publish-android-v14.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Verify all 17 matching sprites
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          paths=list(Path("app/src/main/assets/sprites").rglob("*.png"))
+          assert len(paths)==17, f"17 sprites expected, found {len(paths)}"
+          assert all(p.stat().st_size>10000 for p in paths)
+          print("All 17 Android sprites are present")
+          PY
+
+      - name: Download story video
+        run: |
+          python -m pip install --quiet gdown==5.2.0
+          mkdir -p app/src/main/res/raw
+          gdown "https://drive.google.com/uc?id=1PkR4yiBtC_nsbdrwAvjn-l62qVTDLgRv" -O app/src/main/res/raw/cerita.mp4
+          test "$(stat -c %s app/src/main/res/raw/cerita.mp4)" -gt 50000000
+
+      - name: Run Android tests and build
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk Treasure-Hunt-Buah-Buahan-v1.4.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Treasure-Hunt-Buah-Buahan-Android-v1.4
+          path: Treasure-Hunt-Buah-Buahan-v1.4.apk
+          if-no-files-found: error
+
+      - name: Publish Android APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v1.4-android >/dev/null 2>&1; then
+            gh release upload v1.4-android Treasure-Hunt-Buah-Buahan-v1.4.apk --clobber
+          else
+            gh release create v1.4-android Treasure-Hunt-Buah-Buahan-v1.4.apk \
+              --target "${GITHUB_SHA}" \
+              --title "Treasure Hunt Buah-Buahan v1.4 Android" \
+              --notes "Versi Android portrait menggunakan 17 gambar PNG yang sama seperti Windows v1.3; mengekalkan cerita, skor, 60 saat, tiga nyawa, bunyi dan menu dalam Bahasa Melayu."
+          fi
