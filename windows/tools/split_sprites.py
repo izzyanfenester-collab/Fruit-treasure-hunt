@@ -1,138 +1,173 @@
 #!/usr/bin/env python3
-"""Extract the 17 transparent sprites without slicing adjacent objects.
+"""Safely isolate 17 cartoon sprites with alpha-connected components.
 
-The artist's PNG is laid out in three rows. Vertical boundaries are selected at
-transparent gaps *from actual pixel data* instead of old hard-coded cell cuts
-that created unwanted bits of neighbouring fruit.
+The supplied PNG has adjacent sprites whose X extents overlap, so vertical
+rectangular cuts inevitably slice grapes, strawberries and banana. Here each
+object is extracted by its own 8-connected visible alpha silhouette.
 """
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/assets/glossy_grocery_game_icon_set.png"
-OUTPUT = ROOT / "src/assets/sprites"
-EXPECTED_ASPECT = 1448 / 1086
+DEST = ROOT / "src/assets/sprites"
 PADDING = 16
-ALPHA_THRESHOLD = 24
+ALPHA_THRESHOLD = 32
 
-# Each row: (top in source pixels, bottom, nominal x dividers, filenames).
-# The search around each nominal divider prevents pieces of adjacent images
-# becoming stuck to fruits, grapes, strawberry, shoes and other items.
-LAYOUT = [
-    (
-        0, 414,
-        [363, 719, 1081],
-        ["baskets/bakul_hijau.png", "baskets/bakul_merah.png",
-         "baskets/bakul_ungu.png", "baskets/bakul_oren.png"],
-    ),
-    (
-        415, 713,
-        [192, 370, 549, 731, 912, 1088, 1256],
-        ["fruits/epal_hijau.png", "fruits/epal_merah.png",
-         "fruits/anggur.png", "fruits/oren.png", "fruits/mangga.png",
-         "fruits/pir.png", "fruits/strawberi.png", "fruits/pisang.png"],
-    ),
-    (
-        714, 1086,
-        [237, 550, 752, 1103],
-        ["wrong/botol.png", "wrong/kasut.png", "wrong/tin.png",
-         "wrong/kotak.png", "wrong/mainan.png"],
-    ),
+ROWS = [
+    (0, 414, [
+        "baskets/bakul_hijau.png",
+        "baskets/bakul_merah.png",
+        "baskets/bakul_ungu.png",
+        "baskets/bakul_oren.png",
+    ]),
+    (415, 713, [
+        "fruits/epal_hijau.png",
+        "fruits/epal_merah.png",
+        "fruits/anggur.png",
+        "fruits/oren.png",
+        "fruits/mangga.png",
+        "fruits/pir.png",
+        "fruits/strawberi.png",
+        "fruits/pisang.png",
+    ]),
+    (714, 1086, [
+        "wrong/botol.png",
+        "wrong/kasut.png",
+        "wrong/tin.png",
+        "wrong/kotak.png",
+        "wrong/mainan.png",
+    ]),
 ]
 
 
-def get_gap(alpha, nominal_x, top, bottom, img_width, max_offset):
-    """Find the column containing least visible alpha near a cell divider."""
-    left = max(1, nominal_x - max_offset)
-    right = min(img_width - 2, nominal_x + max_offset)
-    pixels = alpha.load()
-    results = []
-    for x in range(left, right + 1):
-        # A separator is safe only if pixels at x/x+1 are transparent. Strong
-        # penalty for actual objects crossing the cut and a weak centring tie.
-        hits = sum(
-            1 for y in range(top, bottom)
-            if pixels[x, y] > ALPHA_THRESHOLD
-            or pixels[x + 1, y] > ALPHA_THRESHOLD
-        )
-        results.append((hits, abs(x - nominal_x), x))
-    hits, _distance, divider = min(results)
-    print(f"Divider near {nominal_x}: using x={divider}, alpha-row hits={hits}")
-    return divider, hits
+def components(alpha_image):
+    """Return substantial 8-connected alpha groups, with exact pixel indices."""
+    width, height = alpha_image.size
+    opaque = alpha_image.tobytes()
+    visited = bytearray(len(opaque))
+    groups = []
+    for starting in range(len(opaque)):
+        if visited[starting] or opaque[starting] <= ALPHA_THRESHOLD:
+            continue
+        visited[starting] = 1
+        pending = [starting]
+        members = []
+        left, top, right, bottom = width, height, 0, 0
+        while pending:
+            index = pending.pop()
+            y, x = divmod(index, width)
+            members.append(index)
+            left = min(left, x)
+            right = max(right, x)
+            top = min(top, y)
+            bottom = max(bottom, y)
+
+            # Check 8 neighbours so thin stems and diagonal leaves stay
+            # attached to their parent fruit.
+            for yy in (y - 1, y, y + 1):
+                if yy < 0 or yy >= height:
+                    continue
+                for xx in (x - 1, x, x + 1):
+                    if xx < 0 or xx >= width or (xx == x and yy == y):
+                        continue
+                    adjacent = yy * width + xx
+                    if not visited[adjacent] and opaque[adjacent] > ALPHA_THRESHOLD:
+                        visited[adjacent] = 1
+                        pending.append(adjacent)
+        if len(members) >= 1000:
+            groups.append((members, (left, top, right + 1, bottom + 1)))
+
+    return groups
 
 
-def save_sprite(source, bounds, filename):
-    tile = source.crop(bounds)
-    bbox = tile.getchannel("A").point(
-        lambda v: 255 if v > ALPHA_THRESHOLD else 0
-    ).getbbox()
-    if not bbox:
-        raise RuntimeError(f"Tiada objek dalam sprite {filename}")
+def export_sprite(source, alpha_row_top, row_width, component, filename):
+    members, (left, top, right, bottom) = component
+    # Crop only near THIS object's actual silhouette. Every other item is
+    # removed using the component mask even when two bounding boxes overlap.
+    spread = 4
+    crop_left = max(0, left - spread)
+    crop_top = max(0, top - spread)
+    crop_right = min(row_width, right + spread)
+    crop_bottom = min(source.height-alpha_row_top, bottom + spread)
+    crop_width = crop_right - crop_left
+    crop_height = crop_bottom - crop_top
+    local_mask = bytearray(crop_width * crop_height)
+    for index in members:
+        y, x = divmod(index, row_width)
+        if crop_left <= x < crop_right and crop_top <= y < crop_bottom:
+            local_mask[(y - crop_top) * crop_width + x - crop_left] = 255
 
-    trimmed = tile.crop(bbox)
-    # Explicit transparent border OUTSIDE the crop. Merely expanding the old
-    # fixed cell was insufficient, because it included adjacent object shards.
-    out = Image.new(
-        "RGBA",
-        (trimmed.width + PADDING * 2, trimmed.height + PADDING * 2),
-        (0, 0, 0, 0),
+    # Restore 1–2 pixel antialiased fringes around each silhouette.
+    mask = Image.frombytes("L", (crop_width, crop_height), bytes(local_mask))
+    mask = mask.filter(ImageFilter.MaxFilter(5))
+    original_pixels = source.crop(
+        (crop_left, crop_top + alpha_row_top,
+         crop_right, crop_bottom + alpha_row_top)
     )
-    out.alpha_composite(trimmed, (PADDING, PADDING))
+    isolated = Image.new("RGBA", (crop_width, crop_height), (0, 0, 0, 0))
+    isolated.paste(original_pixels, (0, 0), mask)
 
-    # Assert the visible sprite never touches the final PNG edges.
-    pixels = out.getchannel("A")
-    assert pixels.crop((0, 0, out.width, PADDING)).getbbox() is None
-    assert pixels.crop((0, out.height-PADDING, out.width, out.height)).getbbox() is None
-    assert pixels.crop((0, 0, PADDING, out.height)).getbbox() is None
-    assert pixels.crop((out.width-PADDING, 0, out.width, out.height)).getbbox() is None
+    visible = isolated.getchannel("A").getbbox()
+    if not visible:
+        raise RuntimeError(f"Tiada piksel kelihatan untuk {filename}")
+    trimmed = isolated.crop(visible)
+    sprite = Image.new("RGBA", (
+        trimmed.width + 2 * PADDING,
+        trimmed.height + 2 * PADDING
+    ), (0, 0, 0, 0))
+    sprite.alpha_composite(trimmed, (PADDING, PADDING))
 
-    dest = OUTPUT / filename
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    out.save(dest, "PNG", optimize=True)
-    print(f"Sprite: {filename} {out.size}")
+    # The entire 16-pixel margin must remain empty.
+    alpha = sprite.getchannel("A")
+    assert alpha.crop((0, 0, sprite.width, PADDING)).getbbox() is None
+    assert alpha.crop((0, sprite.height-PADDING, sprite.width, sprite.height)).getbbox() is None
+    assert alpha.crop((0, 0, PADDING, sprite.height)).getbbox() is None
+    assert alpha.crop((sprite.width-PADDING, 0, sprite.width, sprite.height)).getbbox() is None
+
+    destination = DEST / filename
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    sprite.save(destination, "PNG", optimize=True)
+    print(f"{filename}: pixels={len(members)}, bbox={(left,top,right,bottom)}, output={sprite.size}")
 
 
 def main():
-    if not SOURCE.exists():
-        raise FileNotFoundError(f"Fail sumber tiada: {SOURCE}")
+    if not SOURCE.is_file():
+        raise FileNotFoundError(f"Fail PNG sprite tidak dijumpai: {SOURCE}")
+    with Image.open(SOURCE) as picture:
+        source = picture.convert("RGBA")
 
-    with Image.open(SOURCE) as original:
-        source = original.convert("RGBA")
-    w, h = source.size
-    if abs(w / h - EXPECTED_ASPECT) > .07:
-        raise ValueError(f"Unexpected source sheet dimensions: {w}x{h}")
-    sx, sy = w / 1448, h / 1086
-    alpha = source.getchannel("A")
-    separator_warnings = []
-    for row_number, (top, bottom, dividers, names) in enumerate(LAYOUT, 1):
-        y0 = max(0, round(top * sy))
-        y1 = min(h, round(bottom * sy))
-        x_cuts = [0]
-        # Choose the centre of actual transparent gaps and record if the
-        # original art touches neighbouring objects at a potential boundary.
-        for nominal in dividers:
-            divider, hits = get_gap(
-                alpha, round(nominal * sx), y0, y1, w,
-                max(8, round(27 * sx)),
+    sheet_width, sheet_height = source.size
+    if abs(sheet_width / sheet_height - 1448 / 1086) > .07:
+        raise ValueError(f"Unexpected sprite-sheet size: {sheet_width}x{sheet_height}")
+    scale_y = sheet_height / 1086
+
+    # Remove earlier generated PNGs before extracting, avoiding stale assets.
+    if DEST.exists():
+        for png in DEST.rglob("*.png"):
+            png.unlink()
+
+    for nominal_top, nominal_bottom, filenames in ROWS:
+        top = round(nominal_top * scale_y)
+        bottom = min(sheet_height, round(nominal_bottom * scale_y))
+        stripe = source.crop((0, top, sheet_width, bottom))
+        groups = components(stripe.getchannel("A"))
+        groups = sorted(groups, key=lambda item: len(item[0]), reverse=True)
+        if len(groups) < len(filenames):
+            raise RuntimeError(
+                f"Baris {nominal_top}: hanya ada {len(groups)} objek, "
+                f"dijangka {len(filenames)}. Tidak mahu bina PNG terpotong."
             )
-            x_cuts.append(divider)
-            if hits:
-                separator_warnings.append((row_number, nominal, hits))
-        x_cuts.append(w)
-        if len(x_cuts) - 1 != len(names):
-            raise ValueError("Sprite sheet segment count mismatch")
-        for i, name in enumerate(names):
-            save_sprite(source, (x_cuts[i], y0, x_cuts[i+1], y1), name)
+        groups = groups[:len(filenames)]
+        groups.sort(key=lambda item: (item[1][0] + item[1][2]) / 2)
+        print(f"Baris {nominal_top}-{nominal_bottom}: {len(groups)} bentuk bersambung")
+        for component, filename in zip(groups, filenames):
+            export_sprite(source, top, sheet_width, component, filename)
 
-    count = sum(1 for _ in OUTPUT.rglob("*.png"))
-    if count != 17:
-        raise RuntimeError(f"Dijangka 17 PNG, ada {count}")
-    print(f"Berjaya: {count} sprites, masing-masing dengan {PADDING}px ruang lutsinar")
-    if separator_warnings:
-        for row, nominal, hits in separator_warnings:
-            print(f"AMARAN: sempadan baris {row} x={nominal} ada {hits} pixel alpha")
-    else:
-        print("Semua pemisah ialah jurang lutsinar: tiada objek jiran terpotong.")
+    all_png = list(DEST.rglob("*.png"))
+    if len(all_png) != 17:
+        raise RuntimeError(f"Hanya ada {len(all_png)}/17 fail PNG")
+    print("BERJAYA: 17/17 objek dipisahkan menggunakan alpha 8-connected; tiada potongan petak.")
 
 
 if __name__ == "__main__":
