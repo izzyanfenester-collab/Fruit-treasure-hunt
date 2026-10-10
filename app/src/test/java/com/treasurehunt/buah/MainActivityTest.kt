@@ -78,16 +78,16 @@ class MainActivityTest {
     }
 
     @Test fun pauseFreezesTimerAndSoundToggleKeepsGamePaused() {
-        val round = startRound(); tap("JEDA"); assertFalse(round.isRunning)
+        val round = startRound(); tap("HENTI SEBENTAR"); assertFalse(round.isRunning)
         val timer = views().filterIsInstance<TextView>().single { it.text.contains("MASA:") }.text.toString()
         advanceFrames(3000)
         assertTrue(hasText(timer)); pauseTap("BUNYI ON"); assertFalse(round.isRunning)
         pauseTap("SAMBUNG"); assertTrue(round.isRunning)
-        tap("JEDA"); pauseTap("MENU UTAMA"); assertFalse(round.isRunning); assertTrue(hasText("MULA BERMAIN"))
+        tap("HENTI SEBENTAR"); pauseTap("MENU UTAMA"); assertFalse(round.isRunning); assertTrue(hasText("MULA BERMAIN"))
     }
 
     @Test fun restartAndBackgroundPauseRequireFreshCountdownAndExplicitResume() {
-        val oldRound = startRound(); tap("JEDA"); pauseTap("MULA SEMULA")
+        val oldRound = startRound(); tap("HENTI SEBENTAR"); pauseTap("MULA SEMULA")
         assertFalse(oldRound.isRunning); assertEquals("story_countdown", asset())
         advanceFrames(3500)
         val newRound = views().filterIsInstance<FruitGameView>().single()
