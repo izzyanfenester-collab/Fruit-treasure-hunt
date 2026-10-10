@@ -1,0 +1,35 @@
+name: Add Android Sprite Assets
+
+on:
+  push:
+    paths:
+      - ".github/workflows/generate-android-sprites.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Extract matching game sprites
+        run: |
+          python -m pip install --quiet Pillow
+          python windows/tools/split_sprites.py
+          mkdir -p app/src/main/assets
+          cp -r windows/src/assets/sprites app/src/main/assets/
+          python - <<'PY'
+          from pathlib import Path
+          images = list(Path("app/src/main/assets/sprites").rglob("*.png"))
+          assert len(images)==17, f"Dijangka 17 PNG, jumpa {len(images)}"
+          print("Android assets: semua 17 imej bersaiz penuh disediakan")
+          PY
+      - name: Commit Android-only sprite files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/assets/sprites/
+          git diff --cached --quiet || (git commit -m "Bundle 17 clean transparent game sprites for Android" && git push origin HEAD:main)
