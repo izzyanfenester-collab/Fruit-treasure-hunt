@@ -1,0 +1,51 @@
+name: Inspect Sprite Components
+
+on:
+  push:
+    paths:
+      - ".github/workflows/sprite-inspect.yml"
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect alpha connected components in source sprite sheet
+        run: |
+          python -m pip install --quiet Pillow
+          python - <<'PY'
+          from collections import deque
+          from PIL import Image
+          img=Image.open('windows/src/assets/glossy_grocery_game_icon_set.png').convert('RGBA')
+          w,h=img.size
+          alpha=img.getchannel('A')
+          print('image',w,h)
+          for name,top,bottom in [('basket',0,414),('fruit',415,713),('wrong',714,1086)]:
+              rect=alpha.crop((0,top,w,bottom))
+              bw,bh=rect.size
+              pixels=rect.tobytes()
+              visited=bytearray(len(pixels))
+              comps=[]
+              for start in range(len(pixels)):
+                  if pixels[start]<=32 or visited[start]:continue
+                  queue=[start];visited[start]=1;count=0
+                  xmin=bw;xmax=0;ymin=bh;ymax=0;sum_x=0
+                  while queue:
+                      i=queue.pop()
+                      y,x=divmod(i,bw)
+                      count+=1;sum_x+=x
+                      xmin=min(xmin,x);xmax=max(xmax,x)
+                      ymin=min(ymin,y);ymax=max(ymax,y)
+                      for ny,nx in ((y-1,x),(y+1,x),(y,x-1),(y,x+1),
+                                    (y-1,x-1),(y-1,x+1),(y+1,x-1),(y+1,x+1)):
+                          if 0<=nx<bw and 0<=ny<bh:
+                              ni=ny*bw+nx
+                              if not visited[ni] and pixels[ni]>32:
+                                  visited[ni]=1;queue.append(ni)
+                  if count>150:
+                      comps.append((count,(xmin,ymin+top,xmax+1,ymax+top+1),round(sum_x/count,1)))
+              comps.sort(reverse=True)
+              print(name, 'large components',len(comps))
+              for c in comps[:30]:print(' ',c)
+          PY
