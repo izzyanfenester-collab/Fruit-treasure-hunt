@@ -263,7 +263,7 @@ class MainActivity : Activity() {
         val top = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(dp(12), 0, dp(12), 0) }
         hud = TextView(this).apply { textSize = 15f; gravity = Gravity.CENTER; setTextColor(Color.rgb(36, 92, 58)); setTypeface(null, Typeface.BOLD) }
         top.addView(hud, LinearLayout.LayoutParams(0, dp(56), 1f))
-        top.addView(Button(this).apply { text = "JEDA"; isAllCaps = false; setOnClickListener { pause() } }, LinearLayout.LayoutParams(dp(82), dp(52)))
+        top.addView(Button(this).apply { text = "HENTI SEBENTAR"; textSize = 11f; isAllCaps = false; setOnClickListener { pause() } }, LinearLayout.LayoutParams(dp(114), dp(52)))
         p.addView(top)
         game = FruitGameView(this, selected, { state ->
             val label = getString(R.string.game_hud, ceil(state.remaining).toInt(), state.score, "♥".repeat(state.lives) + "♡".repeat(3 - state.lives))
@@ -278,7 +278,7 @@ class MainActivity : Activity() {
         current.pause()
         if (pauseDialog?.isShowing == true) return
         val controls = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(4), dp(20), dp(20)) }
-        val dialog = AlertDialog.Builder(this).setTitle("GAME DIJEDA").setView(controls).setCancelable(false).create()
+        val dialog = AlertDialog.Builder(this).setTitle("PERMAINAN DIHENTIKAN SEMENTARA").setView(controls).setCancelable(false).create()
         pauseDialog = dialog
         button(controls, "SAMBUNG") { dialog.dismiss(); current.resume() }
         button(controls, "MULA SEMULA") { dialog.dismiss(); beginCountdown() }
