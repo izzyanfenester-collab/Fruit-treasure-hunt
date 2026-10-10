@@ -20,8 +20,11 @@ class FruitGameView(context: Context, private val basket: Basket,
     private val floatingPoints = mutableListOf<Points>()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
     private val art = SceneArt()
-    private val fruitSprites = FruitKind.entries.associateWith { kind -> sprite { art.fruit(it, 0f, 0f, kind) } }
-    private val wrongSprites = WrongKind.entries.associateWith { kind -> sprite { art.wrong(it, 0f, 0f, kind) } }
+    // The same 17 fully isolated PNG objects used by the Windows version.
+    private val sprites = GameSprites(context)
+    private val fruitSprites = sprites.fruits
+    private val wrongSprites = sprites.wrong
+    private val basketSprites = sprites.baskets
     private var backgroundScene: Bitmap? = null
     private val lighting = BitmapFactory.decodeResource(resources, R.drawable.gameplay_lighting)
     private val teacherWarning = BitmapFactory.decodeResource(resources, R.drawable.teacher_warning)
@@ -132,10 +135,10 @@ class FruitGameView(context: Context, private val basket: Basket,
         canvas.scale(scale, scale)
         if (mistakeTime > 0) { paint.color = 0x22E53935; canvas.drawRect(0f, 40f, worldWidth, worldHeight, paint) }
         drops.forEach { d ->
-            val sprite = if (d.fruit == null) wrongSprites.getValue(d.wrong) else fruitSprites.getValue(d.fruit)
-            canvas.drawBitmap(sprite, null, RectF(d.x - 32, d.y - 32, d.x + 32, d.y + 32), paint)
+            val image = if (d.fruit == null) wrongSprites.getValue(d.wrong) else fruitSprites.getValue(d.fruit)
+            drawImageFit(canvas, image, d.x, d.y, 64f, 72f)
         }
-        art.basket(canvas, basketX, worldHeight - 75f, basket.colour, .8f)
+        drawImageFit(canvas, basketSprites.getValue(basket), basketX, worldHeight - 58f, 116f, 100f)
         text(canvas, "${basket.fruit} = +20", worldWidth / 2, worldHeight - 8f, 14f, Color.rgb(36, 92, 58))
         floatingPoints.forEach { points -> text(canvas, points.label, points.x, points.y, 24f, Color.rgb(0, 110, 75)) }
         if (messageTime > 0) {
@@ -158,8 +161,17 @@ class FruitGameView(context: Context, private val basket: Basket,
         }
         canvas.restore()
     }
-    private fun sprite(draw: (Canvas) -> Unit): Bitmap = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888).also {
-        val c = Canvas(it); c.translate(64f, 64f); c.scale(2f, 2f); draw(c)
+    /**
+     * Centre a transparent PNG in the allotted space without squashing its shape.
+     * No placeholder circles, labels or per-frame bitmap decoding.
+     */
+    private fun drawImageFit(c: Canvas, bitmap: Bitmap, x: Float, y: Float, maxW: Float, maxH: Float) {
+        val factor = minOf(maxW / bitmap.width, maxH / bitmap.height)
+        val w = bitmap.width * factor
+        val h = bitmap.height * factor
+        paint.alpha = 255
+        paint.color = Color.WHITE
+        c.drawBitmap(bitmap, null, RectF(x - w / 2f, y - h / 2f, x + w / 2f, y + h / 2f), paint)
     }
     private fun text(c: Canvas, text: String, x: Float, y: Float, size: Float, colour: Int) {
         paint.color = colour; paint.textSize = size; paint.textAlign = Paint.Align.CENTER
