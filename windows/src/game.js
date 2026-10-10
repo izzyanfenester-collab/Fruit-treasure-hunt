@@ -247,7 +247,7 @@
   }
   $('#pauseBtn').onclick=()=>{
     paused=true;
-    openModal('GAME DIJEDA','Permainan sedang dijeda.',[
+    openModal('PERMAINAN DIHENTIKAN SEMENTARA','Permainan dihentikan sementara.',[
       {text:'SAMBUNG',run:()=>{paused=false;lastTime=performance.now();}},
       {text:'MULA SEMULA',run:countdown},
       {text:'MENU UTAMA',purple:true,run:menu}

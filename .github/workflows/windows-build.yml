@@ -56,7 +56,7 @@ jobs:
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
-          name: Fruit-Treasure-Hunt-Windows-v1.1-Installer
+          name: Fruit-Treasure-Hunt-Windows-v1.2-Installer
           path: windows/dist/Fruit-Treasure-Hunt-Setup.exe
           if-no-files-found: error
 
@@ -66,8 +66,8 @@ jobs:
         shell: pwsh
         run: |
           $installer = "windows/dist/Fruit-Treasure-Hunt-Setup.exe"
-          if (gh release view v1.1-windows 2>$null) {
-            gh release upload v1.1-windows $installer --clobber
+          if (gh release view v1.2-windows 2>$null) {
+            gh release upload v1.2-windows $installer --clobber
           } else {
-            gh release create v1.1-windows $installer --target "${{ github.sha }}" --title "Treasure Hunt Buah-Buahan v1.1 Windows" --notes "Versi Windows v1.1 dengan 17 sprite PNG buah, bakul dan item bukan buah; video CERITA offline dan UI landscape."
+            gh release create v1.2-windows $installer --target "${{ github.sha }}" --title "Treasure Hunt Buah-Buahan v1.2 Windows" --notes "Windows v1.2: 17 sprite PNG dipisahkan dengan sempadan lutsinar, Bahasa Melayu sepenuhnya, video CERITA dan paparan landscape."
           }
